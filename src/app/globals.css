@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/* Design tokens — light by default, dark selected (not inverted). */
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --surface-2: #f1f0ec;
+  --border: #e3e1db;
+  --text: #17171a;
+  --muted: #5d5c57;
+  --accent: #c8306e; /* CerealBox pink */
+  --accent-soft: #fbe7ef;
+  --good: #0d7a3e;
+  --good-soft: #e3f4e9;
+  --warn: #9a5b00;
+  --warn-soft: #fdf1dc;
+  --bad: #b42323;
+  --bad-soft: #fbe6e6;
+  --info: #2a5fb0;
+  --info-soft: #e5eefb;
+  --series-1: #2a78d6;
+  --ai: #6a4bd0;
+  --ai-soft: #efebfd;
+  --person: #a45a00;
+  --person-soft: #fdf0dc;
+  --check: #23727a;
+  --check-soft: #e1f2f3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121214;
+    --surface: #1b1b1e;
+    --surface-2: #232327;
+    --border: #2f2f34;
+    --text: #efeee9;
+    --muted: #a9a8a1;
+    --accent: #ec5f97;
+    --accent-soft: #3a1d29;
+    --good: #5fd08f;
+    --good-soft: #15301f;
+    --warn: #f0b552;
+    --warn-soft: #36290f;
+    --bad: #f07a7a;
+    --bad-soft: #3a1a1a;
+    --info: #7fa9ec;
+    --info-soft: #18243a;
+    --series-1: #3987e5;
+    --ai: #ab98f5;
+    --ai-soft: #272042;
+    --person: #f2b660;
+    --person-soft: #362812;
+    --check: #7ccbd2;
+    --check-soft: #143033;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-person: var(--person);
+  --color-person-soft: var(--person-soft);
+  --color-check: var(--check);
+  --color-check-soft: var(--check-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Base element styles live in the base layer so Tailwind utilities (flex, w-4, text-sm…) can override them. */
+@layer base {
+  input:not([type="checkbox"]):not([type="radio"]), textarea, select {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  select { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  textarea { resize: vertical; }
+  input[type="checkbox"], input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin: 0;
+    accent-color: var(--accent);
+  }
+  input[type="file"] { padding: 4px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  input[data-ai], textarea[data-ai], select[data-ai] { background: var(--accent-soft); border-color: var(--accent); }
+  label { font-size: 13px; line-height: 1.35; color: var(--muted); display: block; min-width: 0; overflow-wrap: anywhere; }
+  label > input:not([type="checkbox"]):not([type="radio"]), label > textarea, label > select { margin-top: 6px; }
+  summary { cursor: pointer; }
+}
+.tabular { font-variant-numeric: tabular-nums; }

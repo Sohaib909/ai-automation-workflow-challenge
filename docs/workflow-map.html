@@ -1,0 +1,495 @@
+<title>CerealBox AI Workflow Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; an ecosystem map up top, then nine flow "specimen sheets", then plan. */
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --line: #e2dfd8; --fg: #1a1a1d; --muted: #5f5d57;
+  --accent: #c8306e; --accent-soft: #fbe8f0;
+  --ai: #6d4fd1; --ai-soft: #eeeafc; --human: #a35f00; --human-soft: #fdf0d9; --auto: #2c6e74; --auto-soft: #e2f1f2;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141416; --surface: #1c1c20; --line: #303036; --fg: #eeede8; --muted: #a8a69e;
+  --accent: #ef6a9f; --accent-soft: #3a1d2a; --ai: #a996f2; --ai-soft: #262040; --human: #f0b45a; --human-soft: #352812; --auto: #74c3c9; --auto-soft: #14302f;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141416; --surface: #1c1c20; --line: #303036; --fg: #eeede8; --muted: #a8a69e;
+  --accent: #ef6a9f; --accent-soft: #3a1d2a; --ai: #a996f2; --ai-soft: #262040; --human: #f0b45a; --human-soft: #352812; --auto: #74c3c9; --auto-soft: #14302f;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; }
+h2 { font-size: 26px; }
+h3 { font-size: 19px; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 12px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); font-size: 17px; }
+header { display: grid; gap: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; }
+.k-ai { background: var(--ai-soft); border-color: var(--ai); }
+.k-h { background: var(--human-soft); border-color: var(--human); }
+.k-a { background: var(--auto-soft); border-color: var(--auto); }
+.k-d { background: var(--surface); border-color: var(--muted); }
+section { display: grid; gap: 16px; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; min-width: 640px; display: flex; justify-content: center; background: transparent; }
+.areas { display: grid; gap: 28px; }
+.area { display: grid; gap: 12px; padding-top: 20px; border-top: 1px solid var(--line); }
+.area-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+.tag { font: 500 11px var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
+.tag.built { background: var(--accent-soft); color: var(--accent); }
+.tag.plan { background: var(--auto-soft); color: var(--auto); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 24px; font-size: 14px; }
+.facts > div { min-width: 0; }
+.facts b { display: block; font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.ai-txt { color: var(--ai); } .h-txt { color: var(--human); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.tbl table { min-width: 720px; }
+.phase { font-family: var(--font-display); font-weight: 700; white-space: nowrap; }
+.pill { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; font-weight: 500; }
+.p-auto { background: var(--auto-soft); color: var(--auto); } .p-assist { background: var(--ai-soft); color: var(--ai); } .p-gate { background: var(--human-soft); color: var(--human); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.mono { font-family: var(--font-mono); font-size: 13px; }
+footer { color: var(--muted); font-size: 13px; }
+
+.check { display: grid; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.check a { display: grid; grid-template-columns: 28px minmax(140px, 220px) minmax(0, 1fr); gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--fg); text-decoration: none; align-items: start; }
+.check a:last-child { border-bottom: 0; }
+.check a:hover { background: var(--accent-soft); }
+.check .tick { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.check .req { font-family: var(--font-display); font-weight: 700; }
+.check .ans { font-size: 14px; color: var(--muted); }
+.check .ans em { color: var(--accent); font-style: normal; font-weight: 500; }
+@media (max-width: 640px) { .check a { grid-template-columns: 28px minmax(0,1fr); } .check .ans { grid-column: 2; } }
+.qc { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.qc > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.qc b { font-family: var(--font-display); }
+.qc span { font-size: 14px; color: var(--muted); }
+ol.next { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+ol.next li { padding-left: 4px; }
+ol.next b { font-family: var(--font-display); }
+.byline { font-size: 15px; color: var(--muted); } .byline strong { color: var(--fg); }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">CerealBox Agency · AI automation &amp; creative workflow proposal</div>
+  <h1>One connected system, nine workflows, humans at every gate</h1>
+  <p class="byline">Prepared by <strong>Sohaib Ahmed</strong> · November 2026</p>
+  <p class="lede">Every area below runs the same way: structured inputs, AI drafts, automated quality checks, and a person approving anything that reaches a client or an ad account. Approved work and live performance feed the Idea Generator, so each campaign starts with what the last one taught us.</p>
+  <div class="legend" aria-label="Diagram legend">
+    <span><i class="key k-ai"></i>AI step</span>
+    <span><i class="key k-a"></i>Automated check / system step</span>
+    <span><i class="key k-h"></i>Human review or decision</span>
+    <span><i class="key k-d"></i>Data / asset</span>
+  </div>
+</header>
+
+
+<section id="checklist">
+  <div class="eyebrow">Interview checklist</div>
+  <h2>What CerealBox asked us to prepare</h2>
+  <p>Every item from the brief's “What to prepare for the final interview”, with a one-line answer. Click an item to jump to the detail.</p>
+  <nav class="check" aria-label="Interview checklist">
+    <a href="#ecosystem"><span class="tick">✓</span><span class="req">Overall approach</span><span class="ans">One connected system: brief in, nine agents, one human approval, results feed the next ideas. <em>See: The ecosystem</em></span></a>
+    <a href="#workflows"><span class="tick">✓</span><span class="req">Workflow for every area</span><span class="ans">Input-to-output flow for all nine areas, showing AI steps, automatic checks and human decisions. <em>See: Nine workflows</em></span></a>
+    <a href="#tools"><span class="tick">✓</span><span class="req">Tools / technology</span><span class="ans">Claude for ideas and writing, OpenAI and Google for images, Whisper and video, HeyGen and ElevenLabs for presenters, Meta API for data, with the reason for each. <em>See: Which AI we'd use for what</em></span></a>
+    <a href="#demo"><span class="tick">✓</span><span class="req">Demo / prototype</span><span class="ans">A working web app: all nine agents and a one-click autopilot that builds a campaign package in about 35 seconds. <em>See: The AI agents you can try today</em></span></a>
+    <a href="#judgement"><span class="tick">✓</span><span class="req">AI involvement</span><span class="ans">AI drafts and analyses. Code calculates. People approve anything that reaches a client or an ad account. <em>See: Automate, assist or approve</em></span></a>
+    <a href="#quality"><span class="tick">✓</span><span class="req">Quality controls</span><span class="ans">Facts-only rule, figure checking, banned phrases, schema validation, versioning, and checks that block approval. <em>See: Quality controls</em></span></a>
+    <a href="#maintenance"><span class="tick">✓</span><span class="req">Maintenance</span><span class="ans">Swap models per task, version prompts, test them against past briefs, and log every AI call. <em>See: Keeping it healthy</em></span></a>
+    <a href="#maintenance"><span class="tick">✓</span><span class="req">Scale and cost</span><span class="ans">Text AI costs pennies per brief; video is the main cost and is used selectively. Data is separated and costs are logged per client. <em>See: Scale and cost</em></span></a>
+    <a href="#roadmap"><span class="tick">✓</span><span class="req">Milestones and timeline</span><span class="ans">2 weeks, 30, 60 and 90 days, covering what comes first and why, dependencies, and how success is measured. <em>See: Roadmap</em></span></a>
+    <a href="#next"><span class="tick">✓</span><span class="req">Next steps</span><span class="ans">What I'd build or improve first if I joined CerealBox. <em>See: Next steps</em></span></a>
+  </nav>
+</section>
+
+<section id="ecosystem">
+  <div class="eyebrow">End to end</div>
+  <h2>The ecosystem</h2>
+  <p>Brief in, approved assets out, performance back in. Anything that leaves the system needs human approval, including ads, pages, client reports and budget changes.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TB
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+
+  IN[Brand kit and campaign brief]:::data --> IG[1 · Idea Generator]:::ai
+  IG --> G1{{Idea approved?}}:::human
+  G1 --> CW[2 · Copywriting]:::ai
+  G1 --> SW[4 · Script Writing]:::ai
+  CW --> SC[3 · Static Creative]:::ai
+  CW --> LP[7 · Landing Pages]:::ai
+  SW --> UGC[5 · UGC Video]:::ai
+  UGC --> VE[6 · Video Editing]:::ai
+  SC --> G2{{One review: approve all or regenerate}}:::human
+  LP --> G2
+  VE --> G2
+  G2 --> ADS[Launch in Meta by a media buyer]:::human
+  ADS --> TO[8 · Toast analytics]:::auto
+  TO --> MB[9 · Media Buyer, read-only]:::ai
+  MB --> G3{{Recommendation accepted?}}:::human
+  G3 -- learnings feed new ideas --> IG
+  </pre></div>
+</section>
+
+<section id="workflows">
+  <div class="eyebrow">Area by area</div>
+  <h2>Nine workflows</h2>
+  <p>All nine run in the working demo on one shared provider layer, approval model and data structure. Seven are complete. UGC Video and Video Editing produce the full production plan; the paid video-rendering step plugs in later.</p>
+
+  <div class="areas">
+
+  <article class="area" id="ideas">
+    <div class="area-head"><h3>1 · AI Idea Generator</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Brief + brand kit · past ideas + ratings · approved performance learnings]:::data --> B[Assemble context · assign 1 creative lens per idea]:::auto
+  B --> C[LLM generates ideas · concept · hook · visual · video · test hypothesis]:::ai
+  C --> D[Schema validation · claim check · near-duplicate check · weighted score]:::auto
+  D --> E{{Strategist: approve · reject · request changes · rate 1-5}}:::human
+  E -- approved --> F[Copy · Static · Script · Landing]:::data
+  E -- ratings and rejections --> B
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Generates 3–6 distinct concepts, each forced through a different lens (myth-buster, tangible impact, first-person POV and so on), and scores them against 8 criteria with a reason for each score.</span></div>
+      <div><b>Human does</b><span class="h-txt">Approves, rejects with a reason, or rates each idea. Ratings and rejections steer the next batch.</span></div>
+      <div><b>Quality controls</b>Only facts listed in the brief's proof points may be used. Invented figures and banned claims are flagged. Scores help triage and are not presented as predictions.</div>
+      <div><b>Preferred tools</b><strong>Claude Opus 5.5</strong> for idea generation (strong reasoning over long briefs, follows brand rules). <strong>OpenAI GPT</strong> as a second source of different ideas. Demo: Ollama Cloud (gpt-oss:120b).</div>
+    </div>
+  </article>
+
+  <article class="area" id="copy">
+    <div class="area-head"><h3>2 · AI Copywriting</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Approved idea + brief · brand voice + banned claims]:::data --> B[LLM writes variations · hook · headline · primary text · description · CTA]:::ai
+  B --> C[QC: unsupported figures · banned claims · Meta length limits · valid CTA button]:::auto
+  C --> D{{Copywriter edits or · regenerates one field}}:::human
+  D --> E[New version saved · approval reset]:::auto
+  E --> F{{Approve}}:::human
+  F --> G[Ready copy · CSV export · to Static · Landing · Ads]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Writes 3–5 angled variations from the approved idea and can rewrite a single field on instruction, such as "make the hook shorter".</span></div>
+      <div><b>Human does</b><span class="h-txt">Edits, compares versions and approves. Copy with a QC error such as a banned claim cannot be approved.</span></div>
+      <div><b>Quality controls</b>Every edit creates a new version and resets approval, so approved copy can't change silently. Each version records which provider and model produced it.</div>
+      <div><b>Preferred tools</b><strong>Claude Sonnet 5.5</strong> for copy (natural tone, sticks to the facts given, good value at volume). <strong>Claude Haiku 5.5</strong> for bulk checks. Demo: Ollama Cloud.</div>
+    </div>
+  </article>
+
+  <article class="area" id="static">
+    <div class="area-head"><h3>3 · AI Static Creative</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Approved idea + copy · logo · fonts · product shots]:::data --> B[LLM: visual concept + image prompt]:::ai
+  B --> C[Image model: background, · scene, product composite]:::ai
+  C --> D[Template render: real logo, · headline and CTA as live text]:::auto
+  D --> E[Checks: size per placement · safe zones · text contrast · brand colours]:::auto
+  E --> F{{Designer review}}:::human
+  F --> G[Resized set 1:1 · 4:5 · 9:16 · to asset library]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Turns the idea into a visual concept and generates imagery. It does not render the logo or headline text.</span></div>
+      <div><b>Human does</b><span class="h-txt">A designer picks, adjusts and approves. Brand-critical pieces stay human-led.</span></div>
+      <div><b>Quality controls</b>Text and logo are placed by a template, never drawn by the image model, which avoids garbled lettering and off-brand logos. Each placement size is checked automatically.</div>
+      <div><b>Preferred tools</b><strong>OpenAI image model (gpt-image)</strong> or <strong>Google Imagen</strong> for scenes. <strong>FLUX</strong> (open, via ComfyUI or Hugging Face) for low cost. Claude writes the prompts; our template adds text. Demo: FLUX via Pollinations or Hugging Face.</div>
+    </div>
+  </article>
+
+  <article class="area" id="script">
+    <div class="area-head"><h3>4 · AI Script Writing</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Approved idea + brief · format · duration · presenter]:::data --> B[LLM: hooks x3 then · scene-by-scene script]:::ai
+  B --> C[Checks: words per second vs duration · CTA present · claim check]:::auto
+  C --> D{{Creative lead approves}}:::human
+  D --> E[Production pack: shot list · VO · on-screen text · B-roll list]:::auto
+  E --> F[UGC creator brief · or AI video job]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Writes UGC, testimonial-style, explainer and promo scripts as structured scenes: dialogue, VO, on-screen text and B-roll.</span></div>
+      <div><b>Human does</b><span class="h-txt">Approves before any production money is spent.</span></div>
+      <div><b>Quality controls</b>Length is checked against the target duration at about 2.5 words per second. "Testimonial-style" scripts must never present invented customer stories as real.</div>
+      <div><b>Preferred tools</b><strong>Claude Sonnet 5.5</strong> for scripts and scene structure; <strong>OpenAI GPT</strong> as an alternative. Demo: Ollama Cloud.</div>
+    </div>
+  </article>
+
+  <article class="area" id="ugc">
+    <div class="area-head"><h3>5 · AI UGC Video</h3><span class="tag plan">Demo: plan only</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Approved script]:::data --> R{{Route: real creator · AI avatar · generated B-roll}}:::human
+  R --> B[Avatar / voice job · licensed presenter]:::ai
+  R --> C[Generative B-roll job · per scene]:::ai
+  R --> CR[Creator brief pack]:::data
+  B & C --> Q[Async job queue · status · retries · cost logged]:::auto
+  Q --> D{{Review: lip-sync · realism · consent · AI disclosure}}:::human
+  CR --> D
+  D --> E[To Video Editing]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Produces avatar presenter takes and scene B-roll, with alternative takes per scene.</span></div>
+      <div><b>Human does</b><span class="h-txt">Chooses the route per campaign and reviews every output. Fundraising appeals usually keep real people on camera.</span></div>
+      <div><b>Quality controls</b>Jobs only show as done when the provider confirms. Presenters must be licensed or have consented. AI content is disclosed in line with platform policy.</div>
+      <div><b>Preferred tools</b><strong>HeyGen</strong> for licensed avatars, <strong>ElevenLabs</strong> for voice, <strong>Google Veo</strong>, Runway or Kling for B-roll. Real creators for fundraising appeals. Demo: AI production pack and render job spec.</div>
+    </div>
+  </article>
+
+  <article class="area" id="edit">
+    <div class="area-head"><h3>6 · AI Video Editing</h3><span class="tag plan">Demo: plan only</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Raw footage + approved script · logo · music · B-roll]:::data --> B[Whisper transcript · word timestamps]:::ai
+  B --> C[Cut plan: remove silences and fillers · match takes to script · pick best hook]:::ai
+  C --> D[Render: captions · B-roll on cue · logo · music ducking · loudness]:::auto
+  D --> E[Variants 9:16 · 1:1 · 4:5 · 6s · 15s · 30s]:::auto
+  E --> F{{Editor review and tweaks}}:::human
+  F --> G[Approved exports · source files kept]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Transcribes, builds an edit decision list from the transcript and script, and places captions and B-roll.</span></div>
+      <div><b>Human does</b><span class="h-txt">An editor adjusts pacing and approves. AI handles the first 80% of the work.</span></div>
+      <div><b>Quality controls</b>The pipeline checks for an audio track, resolution, caption sync and duration per placement. Originals are never overwritten.</div>
+      <div><b>Preferred tools</b><strong>OpenAI Whisper</strong> for word-timed transcripts, <strong>FFmpeg</strong> plus <strong>Creatomate</strong> or Shotstack for renders, Descript for editors. Claude writes the edit plan. Demo: AI edit plan.</div>
+    </div>
+  </article>
+
+  <article class="area" id="landing">
+    <div class="area-head"><h3>7 · AI Landing Pages</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Approved idea + copy · offer · CTA · brand tokens]:::data --> B[LLM: section plan · hero · problem · offer · FAQ]:::ai
+  B --> C[LLM: section copy]:::ai
+  C --> D[Render into brand · component templates]:::auto
+  D --> E[Checks: no invented testimonials · links · mobile · speed · tracking]:::auto
+  E --> F{{Approve and publish}}:::human
+  F --> G[Live page with UTMs · versions kept]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Plans the structure and writes each section, carrying over the ad's message so the ad and page match.</span></div>
+      <div><b>Human does</b><span class="h-txt">Edits sections, previews desktop and mobile, and publishes.</span></div>
+      <div><b>Quality controls</b>Social proof sections appear only when real testimonials are supplied. CTA links are validated. A speed and mobile check runs before approval.</div>
+      <div><b>Preferred tools</b><strong>Claude Sonnet 5.5</strong> for structure and copy, <strong>Next.js on Vercel</strong> (or Webflow/Unbounce) to publish, v0 for fast design drafts. Demo: page plan with desktop/mobile preview.</div>
+    </div>
+  </article>
+
+  <article class="area" id="toast">
+    <div class="area-head"><h3>8 · Toast / Meta Ads Analysis</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Meta CSV export now · Marketing API read-only later]:::data --> B[Validate columns · reject bad rows · map account to client · dedupe]:::auto
+  B --> C[(Daily facts · missing stays missing)]:::data
+  C --> D[Metric layer: CTR · CPC · CPM · cost per result · ROAS from sums]:::auto
+  D --> E[Multi-client dashboard · filters · trends · comparisons]:::auto
+  D --> F[AI summary from a fact sheet · every figure checked against source]:::ai
+  F --> G{{Account manager reviews · before it reaches a client}}:::human
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Writes plain-English summaries using only figures it is given. Any number not in the source data is flagged.</span></div>
+      <div><b>Human does</b><span class="h-txt">Reviews summaries before they go to clients and maps new ad accounts to clients.</span></div>
+      <div><b>Quality controls</b>Blank cells stay "unavailable", never 0. Ratios are recomputed from totals. ROAS is shown only when conversion value is complete. Duplicate files and rows are skipped.</div>
+      <div><b>Preferred tools</b><strong>Meta Marketing API</strong> (read-only) on a nightly schedule (<strong>n8n</strong> or cron), Postgres or Turso for storage, <strong>Claude Haiku 5.5</strong> for figure-checked summaries. Demo: CSV import and dashboard.</div>
+    </div>
+  </article>
+
+  <article class="area" id="mediabuyer">
+    <div class="area-head"><h3>9 · AI Media Buyer / Ads Agent</h3><span class="tag built">Working demo</span></div>
+    <div class="diagram"><pre class="mermaid">
+flowchart LR
+  classDef ai fill:#eeeafc,stroke:#6d4fd1,color:#1a1a1d,stroke-width:2px
+  classDef auto fill:#e2f1f2,stroke:#2c6e74,color:#1a1a1d,stroke-width:2px
+  classDef human fill:#fdf0d9,stroke:#a35f00,color:#1a1a1d,stroke-width:2px
+  classDef data fill:#ffffff,stroke:#5f5d57,color:#1a1a1d
+  A[Toast daily data]:::data --> B[Rules: cost per result rising · ROAS drop · spend spike · creative fatigue · spend with no results · top creative]:::auto
+  B --> C[Recommendation with evidence · this week vs last · confidence]:::ai
+  C --> D{{Media buyer: accept · reject with reason · dismiss}}:::human
+  D -- accepted --> E[Human actions it in Ads Manager · later: API with caps + audit]:::human
+  D -- creative learnings --> F[Idea Generator]:::data
+    </pre></div>
+    <div class="facts">
+      <div><b>AI does</b><span class="ai-txt">Explains what changed and what to check, attaching the exact metrics that triggered each alert.</span></div>
+      <div><b>Human does</b><span class="h-txt">Makes every decision. The agent is read-only and cannot pause, edit or publish anything.</span></div>
+      <div><b>Quality controls</b>Detection is rule-based and deterministic, so alerts are never invented. Thresholds are configurable. Every decision is audited.</div>
+      <div><b>Preferred tools</b>A rules engine finds issues (no AI guessing). <strong>Claude Sonnet 5.5</strong> explains them with the numbers. Slack for alerts. Demo: rules plus accept/reject, with learnings feeding ideas.</div>
+    </div>
+  </article>
+  </div>
+</section>
+
+
+<section id="tools">
+  <div class="eyebrow">Tools</div>
+  <h2>Which AI we'd use for what</h2>
+  <p>We pick the best tool for each job rather than one AI for everything. The app routes each task to a configured model, so a better or cheaper model can be swapped in without rebuilding anything.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Job</th><th>Preferred</th><th>Also good</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Campaign ideas and strategy</td><td><strong>Claude Opus 5.5</strong></td><td>OpenAI GPT (flagship)</td><td>Strongest reasoning over long briefs; respects brand rules. A second model gives genuinely different ideas.</td></tr>
+      <tr><td>Ad copy, scripts, landing page copy</td><td><strong>Claude Sonnet 5.5</strong></td><td>OpenAI GPT</td><td>Natural, on-brand writing that sticks to the facts given; good value at volume.</td></tr>
+      <tr><td>Checks, tagging, quick summaries</td><td><strong>Claude Haiku 5.5</strong></td><td>OpenAI small models</td><td>Fast and low-cost for high-volume, simple jobs.</td></tr>
+      <tr><td>Image ads</td><td><strong>OpenAI gpt-image</strong> or <strong>Google Imagen</strong></td><td>FLUX (open; ComfyUI or Hugging Face)</td><td>Follows detailed prompts well. FLUX keeps costs low and can run privately. Text and logo always come from our template.</td></tr>
+      <tr><td>UGC presenter video</td><td><strong>HeyGen</strong> + <strong>ElevenLabs</strong></td><td>Google Veo, Runway, Kling (B-roll)</td><td>Licensed avatars and natural voices; real creators stay first choice for fundraising.</td></tr>
+      <tr><td>Transcription and editing</td><td><strong>OpenAI Whisper</strong> + <strong>FFmpeg</strong></td><td>Creatomate or Shotstack, Descript</td><td>Accurate word timings for captions and cuts; automated renders in every size.</td></tr>
+      <tr><td>Landing pages</td><td><strong>Claude Sonnet 5.5</strong> + <strong>Next.js on Vercel</strong></td><td>Webflow, Unbounce, v0</td><td>Page matches the ad; published only after approval.</td></tr>
+      <tr><td>Ads data and reporting</td><td><strong>Meta Marketing API</strong> (read-only)</td><td>n8n, Looker Studio</td><td>Numbers computed by code, not AI; AI only explains them.</td></tr>
+      <tr><td>Automation and agents</td><td><strong>Our app</strong> + <strong>n8n</strong></td><td>Claude Agent SDK</td><td>Core logic in code we control; visual automations where they help.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mono" style="color:var(--muted)">In the demo, all text agents run on Ollama Cloud (gpt-oss:120b) because it has a free tier. Claude and OpenAI models plug in through the same provider layer (OpenRouter adapter today, direct adapters are one file each). Check current model versions and pricing before committing.</p>
+</section>
+
+<section id="demo">
+  <div class="eyebrow">Working demo</div>
+  <h2>The AI agents you can try today</h2>
+  <p>A working web app (Next.js, deployable to Vercel). Describe a campaign once; the AI autopilot runs every agent in about 35 seconds, then a person approves the package in one place.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Agent</th><th>In the demo</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Idea Generator</td><td>3–6 ideas from different angles, scored with reasons, picks the strongest; learns from ratings and ad results</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>Copywriting</td><td>2–5 ad versions with fact, banned-phrase and Meta length checks; edit or rewrite one field; CSV export</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>Static Creative</td><td>Concepts, real AI images and finished PNG ads in 1:1, 4:5 and 9:16, text set by template</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>Script Writing</td><td>Hooks and scene-by-scene scripts timed to 15–60 seconds, CTA check</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>UGC Video</td><td>Presenter brief, shot list, consent and AI-disclosure notes, render job spec</td><td><span class="pill p-assist">Plan only</span></td></tr>
+      <tr><td>Video Editing</td><td>Timeline, captions, B-roll cues, music and export sizes</td><td><span class="pill p-assist">Plan only</span></td></tr>
+      <tr><td>Landing Pages</td><td>Section plan and copy with desktop/mobile preview; never publishes on its own</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>Toast (Meta analysis)</td><td>CSV import with validation, multi-client dashboard, AI summary with every figure checked</td><td><span class="pill p-auto">Working</span></td></tr>
+      <tr><td>Media Buyer</td><td>Flags rising costs, tired ads, spend spikes, wasted spend and winners; read-only; accepted lessons feed new ideas</td><td><span class="pill p-auto">Working</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>Across every agent: Approve · Regenerate (with a note) · Reject, “Fill with AI” and per-field suggestions on every form, AI settings per campaign, and a full log of decisions and AI calls.</p>
+</section>
+
+<section id="judgement">
+  <div class="eyebrow">Judgement</div>
+  <h2>Automate, assist or approve</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Task</th><th>Mode</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Data ingest, validation, metric calculation, alerts</td><td><span class="pill p-auto">Automate</span></td><td>Deterministic, testable, and low risk if it fails visibly</td></tr>
+      <tr><td>Ideas, copy, scripts, page drafts, edit plans, summaries</td><td><span class="pill p-assist">AI assists</span></td><td>AI drafts are fast and cheap. Quality varies, so a human chooses</td></tr>
+      <tr><td>Anything a client or the public sees</td><td><span class="pill p-gate">Human approves</span></td><td>Brand, legal and fundraising-regulation risk</td></tr>
+      <tr><td>Budget, bid, pause or publish in ad accounts</td><td><span class="pill p-gate">Human approves</span></td><td>Money moves. Read-only now; API writes later only with caps and audit</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+
+<section id="quality">
+  <div class="eyebrow">Quality controls</div>
+  <h2>How we reduce bad outputs, errors and hallucinations</h2>
+  <div class="qc">
+    <div><b>Facts only from the brief</b><span>The AI may only use figures and claims listed as proof points. Any other number is flagged, and in summaries checked against the real data.</span></div>
+    <div><b>Brand rules enforced</b><span>Each client's banned phrases block approval until fixed. Absolute claims (“guaranteed”, “best”, “100%”) and invented testimonials are flagged.</span></div>
+    <div><b>Structured, validated output</b><span>Every AI answer must match a strict format. Invalid answers are retried once, then fail visibly; mock output is never passed off as AI.</span></div>
+    <div><b>Different, not repetitive</b><span>Ideas use different creative angles, near-duplicates of past ideas are flagged, and reviewer ratings steer the next batch.</span></div>
+    <div><b>Platform-ready</b><span>Meta length limits, valid buttons, exact ad sizes and Stories safe zones are checked automatically. Text on ads comes from a template, never from the image model.</span></div>
+    <div><b>Nothing changes silently</b><span>Edits and regenerations create new versions and reset approval. Every decision and AI call is logged.</span></div>
+    <div><b>Data you can trust</b><span>Bad and duplicate rows are rejected, missing values stay “unavailable” rather than zero, and ratios are calculated from totals.</span></div>
+    <div><b>Humans hold the keys</b><span>The Media Buyer is read-only. Nothing is published, launched or changed in an ad account without a person.</span></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="eyebrow">Roadmap</div>
+  <h2>2 weeks, 30, 60 and 90 days</h2>
+  <p>Text workflows and data come first because they are cheap, measurable and feed everything else. Video comes last because it is the most expensive, the least mature and carries the most brand risk.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Milestone</th><th>Build</th><th>Depends on</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><td class="phase">Weeks 1–2</td><td>Foundation and pilot on real briefs. <em>Already prototyped:</em> all nine agents, one-click autopilot, approvals, Toast and Media Buyer</td><td>Brand kits and 2–3 real briefs, sample exports</td><td>3 pilot briefs run end to end. At least 50% of ideas rated 4/5 or higher by strategists. Toast totals match Ads Manager within 1%</td></tr>
+      <tr><td class="phase">Day 30</td><td>Meta Marketing API read-only ingest for all clients. Slack alerts. Script Writing. Static Creative v1 (AI imagery and templates). Postgres, logins and roles</td><td>Meta app review, access to ad accounts, design templates</td><td>Every account refreshes nightly. At least 70% of alerts marked "useful". First copy draft in under 10 minutes</td></tr>
+      <tr><td class="phase">Day 60</td><td>Video Editing pipeline (Whisper and FFmpeg or Creatomate). Landing Pages. UGC pilot with one avatar provider plus creator brief packs. Client report export</td><td>Footage library, provider trials, hosting for pages</td><td>Short-form edit time down 50%. 2 landing pages live through approval. First UGC tests running</td></tr>
+      <tr><td class="phase">Day 90</td><td>All 9 workflows connected. Learning loop on. Cost and usage dashboard. Prompt regression tests. Optional Media Buyer write actions behind caps</td><td>Pilot feedback, a decision on write permissions</td><td>All 9 used on at least 2 live clients. Cost per asset tracked. Quality scores stable across model changes</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="grid2" id="maintenance">
+  <div class="panel">
+    <h3>Keeping it healthy</h3>
+    <ul>
+      <li>Each task has its own model setting, so a model can be swapped without code changes</li>
+      <li>Prompts are versioned and checked against a fixed set of past briefs before any model switch</li>
+      <li>Every AI call is logged with provider, latency, tokens and failures</li>
+      <li>Reviewer ratings and rejections are the quality metric to track week by week</li>
+      <li>Rule thresholds live in config and are tuned from "useful / not useful" feedback</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <h3>Scale and cost</h3>
+    <ul>
+      <li>Text AI (ideas, copy, summaries) costs pennies per brief on small models. Free tiers cover a pilot</li>
+      <li>Images: a few pence each on hosted APIs, or close to zero on a local GPU</li>
+      <li>Avatar and generative video is the main cost, usually paid per minute or by subscription, so it is used selectively</li>
+      <li>Meta API access is free but rate-limited, handled with a nightly batch pull</li>
+      <li>Every client's data is kept separate. Costs are logged per client and campaign</li>
+    </ul>
+    <p class="mono" style="color:var(--muted)">Prices are indicative. Check current vendor pricing before committing.</p>
+  </div>
+</section>
+
+
+<section id="next">
+  <div class="eyebrow">Next steps</div>
+  <h2>If I joined CerealBox, what I'd do next</h2>
+  <ol class="next">
+    <li><b>Week 1: learn the real work.</b> Sit with strategists, copywriters and media buyers. Collect 10–20 past briefs and their best-performing ads to use as a test set for every AI change.</li>
+    <li><b>Plug in the real data.</b> Connect the Meta Marketing API (read-only) so Toast refreshes every client nightly, and send Media Buyer alerts to Slack.</li>
+    <li><b>Upgrade the writing agents.</b> Switch ideas and copy to Claude, compare the results side by side with the team on the test set, and keep whichever wins.</li>
+    <li><b>Brand kits per client.</b> Load logos, fonts and colours so image ads and landing pages come out fully on-brand.</li>
+    <li><b>Connect video production.</b> Add the render step for UGC (HeyGen and ElevenLabs) and for editing (Whisper and FFmpeg), starting with one pilot client.</li>
+    <li><b>Make it team-ready.</b> Logins and roles, a hosted database, and a weekly client report built from Toast.</li>
+    <li><b>Measure and improve.</b> Track hours saved, approval rate and edits needed for each agent, then improve the weakest agent each month.</li>
+  </ol>
+</section>
+
+<footer>Prepared by Sohaib Ahmed for the CerealBox Agency AI automation challenge. All client names and data in the demo are fictional sample data. No live CerealBox systems or ad accounts were accessed.</footer>
+</div>

@@ -1,0 +1,547 @@
+<title>How CerealBox AI Works</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap">
+<style>
+/* Layout: a picture of the whole loop first, then the same journey step by step down a numbered spine, following one example campaign. */
+:root {
+  --bg: #fbf9fa; --card: #ffffff; --line: #e8e2e6; --fg: #1d1a1e; --muted: #615a60;
+  --accent: #c8306e; --accent-soft: #fce9f1;
+  --ai: #6a4bd0; --ai-soft: #efebfd;
+  --person: #a45a00; --person-soft: #fdf0dc;
+  --check: #23727a; --check-soft: #e1f2f3;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151317; --card: #1e1b20; --line: #343037; --fg: #f1edf0; --muted: #b0a8ae;
+  --accent: #f06aa0; --accent-soft: #3b1c2a; --ai: #ab98f5; --ai-soft: #272042;
+  --person: #f2b660; --person-soft: #362812; --check: #7ccbd2; --check-soft: #143033; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #151317; --card: #1e1b20; --line: #343037; --fg: #f1edf0; --muted: #b0a8ae;
+  --accent: #f06aa0; --accent-soft: #3b1c2a; --ai: #ab98f5; --ai-soft: #272042;
+  --person: #f2b660; --person-soft: #362812; --check: #7ccbd2; --check-soft: #143033; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; }
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
+h1 { font-size: clamp(30px, 5.2vw, 48px); line-height: 1.08; }
+h2 { font-size: clamp(22px, 3vw, 28px); }
+h3 { font-size: 20px; }
+p { margin: 0; max-width: 64ch; }
+.eyebrow { font: 600 12px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 19px; color: var(--muted); }
+header { display: grid; gap: 16px; }
+svg.i { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* Key */
+.key { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border-radius: 99px; font-size: 15px; font-weight: 600; }
+.chip svg.i { width: 20px; height: 20px; }
+.chip.ai { background: var(--ai-soft); color: var(--ai); }
+.chip.person { background: var(--person-soft); color: var(--person); }
+.chip.check { background: var(--check-soft); color: var(--check); }
+
+/* At-a-glance loop */
+.glance { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 28px 20px 22px; overflow-x: auto; }
+.loop { min-width: 860px; display: grid; gap: 6px; }
+.chain { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0; align-items: start; position: relative; }
+.node { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 0 4px; position: relative; }
+.node .disc { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent); position: relative; z-index: 1; }
+.node .disc svg.i { width: 30px; height: 30px; }
+.node.p .disc { background: var(--person-soft); color: var(--person); border-color: var(--person); }
+.node.a .disc { background: var(--ai-soft); color: var(--ai); border-color: var(--ai); }
+.node.c .disc { background: var(--check-soft); color: var(--check); border-color: var(--check); }
+.node b { font: 600 15px var(--font-display); }
+.node small { font-size: 13px; color: var(--muted); line-height: 1.35; }
+.node:not(:last-child)::after { content: ""; position: absolute; top: 31px; left: calc(50% + 34px); right: calc(-50% + 34px); height: 2px; background: var(--line); }
+.node:not(:last-child)::before { content: ""; position: absolute; top: 26px; right: calc(-50% + 34px); border: 6px solid transparent; border-left: 9px solid var(--muted); border-right: 0; z-index: 1; }
+.return { position: relative; height: 54px; margin: 0 calc(100% / 16); }
+.return svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.return span { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 0); background: var(--card); padding: 0 12px; font-weight: 600; color: var(--accent); font-size: 15px; white-space: nowrap; }
+
+/* Step-by-step spine */
+.steps { display: grid; gap: 0; position: relative; }
+.step { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 18px; position: relative; padding-bottom: 32px; }
+.step::before { content: ""; position: absolute; left: 27px; top: 56px; bottom: 0; width: 2px; background: var(--line); }
+.step:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 22px var(--font-display); }
+.body { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.body-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.body-head .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.who { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.who > div { border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
+.who .ai { background: var(--ai-soft); }
+.who .person { background: var(--person-soft); }
+.who .check { background: var(--check-soft); }
+.who h4 { margin: 0; display: flex; align-items: center; gap: 6px; font: 600 14px var(--font-display); letter-spacing: 0.02em; }
+.who .ai h4 { color: var(--ai); } .who .person h4 { color: var(--person); } .who .check h4 { color: var(--check); }
+.who p { font-size: 15.5px; }
+.example { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; font-size: 15.5px; color: var(--muted); }
+.example strong { color: var(--fg); }
+
+/* Make: four outputs */
+.makes { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.make { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.make-head { display: flex; align-items: center; gap: 8px; color: var(--accent); }
+.make-head h4 { margin: 0; font: 600 16px var(--font-display); color: var(--fg); }
+.make ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 15px; }
+.make li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: start; }
+.make li svg.i { width: 18px; height: 18px; margin-top: 3px; }
+.make li.a svg { color: var(--ai); } .make li.p svg { color: var(--person); } .make li.c svg { color: var(--check); }
+
+.never { background: var(--card); border: 2px solid var(--accent); border-radius: 18px; padding: 24px; display: grid; gap: 14px; }
+.never ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.rhythm { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.rhythm > div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; }
+.rhythm b { font: 600 15px var(--font-display); color: var(--accent); }
+footer { color: var(--muted); font-size: 14px; }
+
+/* Nine helper flows */
+.helpers { display: grid; gap: 18px; }
+.helper { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 14px; }
+.helper-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.helper-head .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; }
+.helper-head p { font-size: 15px; color: var(--muted); flex-basis: 100%; }
+.live { font: 600 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 99px; }
+.flow { display: flex; align-items: stretch; gap: 0; overflow-x: auto; padding-bottom: 4px; }
+.fstep { flex: 1 1 0; min-width: 128px; display: grid; justify-items: center; align-content: start; gap: 8px; text-align: center; padding: 12px 8px; border-radius: 12px; border: 2px solid; font-size: 14.5px; line-height: 1.35; }
+.fstep svg.i { width: 24px; height: 24px; }
+.fstep.in { background: var(--card); border-color: var(--line); color: var(--fg); }
+.fstep.in svg { color: var(--muted); }
+.fstep.a { background: var(--ai-soft); border-color: var(--ai); }
+.fstep.a svg { color: var(--ai); }
+.fstep.p { background: var(--person-soft); border-color: var(--person); }
+.fstep.p svg { color: var(--person); }
+.fstep.c { background: var(--check-soft); border-color: var(--check); }
+.fstep.c svg { color: var(--check); }
+.fstep.out { background: var(--accent-soft); border-color: var(--accent); }
+.fstep.out svg { color: var(--accent); }
+.fstep span.w { font: 600 11px var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; }
+.fstep.a span.w { color: var(--ai); } .fstep.p span.w { color: var(--person); } .fstep.c span.w { color: var(--check); } .fstep.out span.w { color: var(--accent); } .fstep.in span.w { color: var(--muted); }
+.arr { flex: none; width: 26px; display: grid; place-items: center; color: var(--muted); font-size: 18px; }
+.loopback { font-size: 14.5px; color: var(--accent); font-weight: 600; display: flex; gap: 6px; align-items: center; }
+@media (max-width: 720px) {
+  .flow { flex-direction: column; overflow: visible; }
+  .fstep { min-width: 0; grid-template-columns: 28px 1fr; justify-items: start; text-align: left; align-items: center; column-gap: 10px; row-gap: 2px; }
+  .fstep svg.i { grid-row: span 2; }
+  .arr { width: 100%; height: 22px; transform: rotate(90deg); }
+}
+@media (max-width: 560px) {
+  .step { grid-template-columns: 40px minmax(0,1fr); gap: 12px; }
+  .num { width: 40px; height: 40px; font-size: 18px; }
+  .step::before { left: 19px; top: 40px; }
+  .body { padding: 16px; }
+}
+
+/* Tools and demo */
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.tool { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.tool .job { font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tool .pick { font: 600 18px var(--font-display); }
+.tool .alt { font-size: 14px; color: var(--muted); }
+.tool p { font-size: 15.5px; }
+.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.demo-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.demo-card h4 { margin: 0; font: 600 16px var(--font-display); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.badge { font: 600 11px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.badge.ok { background: var(--check-soft); color: var(--check); }
+.badge.plan { background: var(--ai-soft); color: var(--ai); }
+.demo-card p { font-size: 15px; color: var(--muted); }
+.note { font-size: 14px; color: var(--muted); }
+.byline { font-size: 16px; color: var(--muted); } .byline strong { color: var(--fg); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-brief" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 16h5"/></symbol>
+    <symbol id="i-idea" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-make" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></symbol>
+    <symbol id="i-approve" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-launch" viewBox="0 0 24 24"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M9 15l-3-3c2-6 7-9 13-9 0 6-3 11-9 13z"/><circle cx="15" cy="9" r="1.5"/></symbol>
+    <symbol id="i-watch" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16v-4M11 16V8M16 16v-6M21 16V5"/></symbol>
+    <symbol id="i-advise" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-learn" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/></symbol>
+    <symbol id="i-ai" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M10 16h4"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></symbol>
+    <symbol id="i-words" viewBox="0 0 24 24"><path d="M4 6h16M4 11h16M4 16h10"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></symbol>
+    <symbol id="i-page" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 13h6M7 16h10"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">CerealBox Agency · how the AI system works</div>
+  <h1>From a client brief to better ads, with people in charge at every step</h1>
+  <p class="byline">Prepared by <strong>Sohaib Ahmed</strong> · November 2026</p>
+  <p class="lede">AI does the heavy lifting: first drafts, variations, number-crunching and spotting problems. People make the decisions: what's on-brand, what goes live and where money is spent. Every result feeds back in, so each campaign starts smarter than the last.</p>
+  <div class="key" aria-label="Key">
+    <span class="chip ai"><svg class="i"><use href="#i-ai"/></svg>AI helps</span>
+    <span class="chip person"><svg class="i"><use href="#i-person"/></svg>A person decides</span>
+    <span class="chip check"><svg class="i"><use href="#i-check"/></svg>Automatic safety check</span>
+  </div>
+</header>
+
+<section style="display:grid;gap:16px">
+  <h2>The whole loop at a glance</h2>
+  <div class="glance" role="img" aria-label="Eight steps in a loop: Brief, Ideas, Make, Approve, Launch, Watch, Advise, Learn, then back to Ideas.">
+    <div class="loop">
+      <div class="chain">
+        <div class="node"><span class="disc"><svg class="i"><use href="#i-brief"/></svg></span><b>Brief</b><small>What the client wants and what we know</small></div>
+        <div class="node a"><span class="disc"><svg class="i"><use href="#i-idea"/></svg></span><b>Ideas</b><small>AI suggests, a strategist picks</small></div>
+        <div class="node a"><span class="disc"><svg class="i"><use href="#i-make"/></svg></span><b>Make</b><small>Words, images, video, landing page</small></div>
+        <div class="node p"><span class="disc"><svg class="i"><use href="#i-approve"/></svg></span><b>Approve</b><small>Nothing goes out unchecked</small></div>
+        <div class="node p"><span class="disc"><svg class="i"><use href="#i-launch"/></svg></span><b>Launch</b><small>Our team puts ads live</small></div>
+        <div class="node c"><span class="disc"><svg class="i"><use href="#i-watch"/></svg></span><b>Watch</b><small>All clients' results in one place</small></div>
+        <div class="node a"><span class="disc"><svg class="i"><use href="#i-advise"/></svg></span><b>Advise</b><small>AI flags problems and winners</small></div>
+        <div class="node p"><span class="disc"><svg class="i"><use href="#i-learn"/></svg></span><b>Learn</b><small>What worked shapes new ideas</small></div>
+      </div>
+      <div class="return" aria-hidden="true">
+        <svg viewBox="0 0 1000 54" preserveAspectRatio="none">
+          <path d="M 937 4 L 937 30 Q 937 44 923 44 L 77 44 Q 63 44 63 30" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="7 6" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <span>↺ every result makes the next round of ideas better</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:grid;gap:20px">
+  <div style="display:grid;gap:8px">
+    <h2>Step by step, with one example</h2>
+    <p>We follow one made-up campaign the whole way: <strong>Harbour Lights Foundation's Winter Appeal</strong>, asking people to give £10 a month to help young people facing homelessness.</p>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-brief"/></svg></span><h3>Brief: capture what we know</h3></div>
+        <p>The account team fills in one short form: who we're talking to, what's stopping them, the offer, and the facts we're allowed to use. The client's brand voice and the phrases they never want used are saved once and reused for every campaign.</p>
+        <div class="who">
+          <div class="person"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-person"/></svg>Person</h4><p>Writes the brief and lists the provable facts. AI can only use these facts.</p></div>
+          <div class="check"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-check"/></svg>Safety check</h4><p>Required details must be filled in. Every change to the brief is saved as a new version.</p></div>
+        </div>
+        <p class="example"><strong>Example:</strong> Audience is past donors aged 30–60. Their worry: "my money disappears into admin." Fact we can use: "£25 funds one night of emergency accommodation." Never say: "100% of your donation."</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-idea"/></svg></span><h3>Ideas: lots of directions, quickly</h3></div>
+        <p>AI suggests several genuinely different campaign ideas. Each one comes at the problem from a different angle, so we don't get five versions of the same thought. Each idea arrives as a short creative brief with a headline thought, an opening line, a visual direction, a video idea and what we'd be testing.</p>
+        <div class="who">
+          <div class="ai"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-ai"/></svg>AI</h4><p>Drafts the ideas and scores each one on things like clarity, originality and brand fit, explaining every score.</p></div>
+          <div class="check"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-check"/></svg>Safety check</h4><p>Flags made-up numbers, banned phrases and ideas too similar to ones we've already had.</p></div>
+          <div class="person"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-person"/></svg>Person</h4><p>A strategist approves, rejects with a reason, or rates each idea. That feedback steers the next batch.</p></div>
+        </div>
+        <p class="example"><strong>Example:</strong> The AI offers "One Night, Counted" (show exactly what £25 pays for), a myth-buster about admin costs, and a day-in-the-life story told from a support worker's view. The strategist approves "One Night, Counted".</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-make"/></svg></span><h3>Make: one approved idea becomes everything we need</h3></div>
+        <p>Once an idea is approved, the same thinking flows into each type of content, so the ad, the video and the landing page all tell the same story.</p>
+        <div class="makes">
+          <div class="make">
+            <div class="make-head"><svg class="i"><use href="#i-words"/></svg><h4>Ad words</h4></div>
+            <ul>
+              <li class="a"><svg class="i"><use href="#i-ai"/></svg>Writes several versions: opening lines, headlines, main text and a button</li>
+              <li class="c"><svg class="i"><use href="#i-check"/></svg>Checks length limits, banned phrases and unproven claims</li>
+              <li class="p"><svg class="i"><use href="#i-person"/></svg>Copywriter edits, asks for rewrites, approves</li>
+            </ul>
+          </div>
+          <div class="make">
+            <div class="make-head"><svg class="i"><use href="#i-image"/></svg><h4>Image ads</h4></div>
+            <ul>
+              <li class="a"><svg class="i"><use href="#i-ai"/></svg>Creates the picture or scene</li>
+              <li class="c"><svg class="i"><use href="#i-check"/></svg>The real logo and headline are added from a brand template, never drawn by AI</li>
+              <li class="p"><svg class="i"><use href="#i-person"/></svg>Designer picks, polishes and approves</li>
+            </ul>
+          </div>
+          <div class="make">
+            <div class="make-head"><svg class="i"><use href="#i-video"/></svg><h4>Video</h4></div>
+            <ul>
+              <li class="a"><svg class="i"><use href="#i-ai"/></svg>Writes the script scene by scene</li>
+              <li class="p"><svg class="i"><use href="#i-person"/></svg>Chooses a real creator or an AI presenter</li>
+              <li class="a"><svg class="i"><use href="#i-ai"/></svg>First edit: cuts pauses, adds captions, logo and music, makes each size</li>
+              <li class="p"><svg class="i"><use href="#i-person"/></svg>Editor fine-tunes and approves</li>
+            </ul>
+          </div>
+          <div class="make">
+            <div class="make-head"><svg class="i"><use href="#i-page"/></svg><h4>Landing page</h4></div>
+            <ul>
+              <li class="a"><svg class="i"><use href="#i-ai"/></svg>Plans the sections and writes them, matching the ad</li>
+              <li class="c"><svg class="i"><use href="#i-check"/></svg>No invented reviews, links work, works on phones</li>
+              <li class="p"><svg class="i"><use href="#i-person"/></svg>Previewed and approved before publishing</li>
+            </ul>
+          </div>
+        </div>
+        <p class="example"><strong>Example:</strong> The ad opens with "£25. One night. One safe bed." A 20-second video shows a support worker making up a bed. The landing page leads with the same line and a £10/month sign-up.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-approve"/></svg></span><h3>Approve: one place to sign things off</h3></div>
+        <p>Everything waiting for a decision sits in one queue, next to its brief and safety-check notes. If someone edits an approved piece, it goes back into the queue, so nothing changes quietly after sign-off.</p>
+        <div class="who">
+          <div class="person"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-person"/></svg>Person</h4><p>Approves, rejects or asks for changes. Every decision is recorded with who made it and when.</p></div>
+          <div class="check"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-check"/></svg>Safety check</h4><p>Anything with a serious problem, such as a banned phrase, can't be approved until it's fixed.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-launch"/></svg></span><h3>Launch: our team goes live</h3></div>
+        <p>A media buyer takes the approved, ready-to-use pieces and sets the ads live. AI never launches, pauses or changes ads, and never touches budgets on its own.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">6</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-watch"/></svg></span><h3>Watch: every client's results in one dashboard</h3></div>
+        <p>Each morning, results from every client's ad account are collected into one dashboard covering money spent, people reached, clicks, donations or sales, and cost per result. It can be filtered by client, campaign and date.</p>
+        <div class="who">
+          <div class="check"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-check"/></svg>Safety check</h4><p>Bad or duplicate rows are caught. Missing numbers show as "not available", never as zero.</p></div>
+          <div class="ai"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-ai"/></svg>AI</h4><p>Writes a plain-English summary. Any figure it mentions is checked against the real data.</p></div>
+          <div class="person"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-person"/></svg>Person</h4><p>An account manager reads it before anything goes to the client.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">7</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-advise"/></svg></span><h3>Advise: an assistant that never sleeps, but never acts alone</h3></div>
+        <p>The ads assistant watches for things a busy team can miss: costs creeping up, an ad people are tired of seeing, a sudden spike in spend, an ad spending money with no results, or an ad doing unusually well. Each alert shows the exact numbers behind it and a suggested next step.</p>
+        <div class="who">
+          <div class="ai"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-ai"/></svg>AI</h4><p>Spots the pattern, explains it simply and suggests what to check.</p></div>
+          <div class="person"><h4><svg class="i" style="width:18px;height:18px"><use href="#i-person"/></svg>Person</h4><p>The media buyer accepts, rejects or dismisses each suggestion, then makes any change themselves.</p></div>
+        </div>
+        <p class="example"><strong>Example:</strong> "The £25 One Night ad costs about half as much per donation as the rest of the campaign this week." The media buyer accepts. Separately: "The night-shelter video is being seen too often and fewer people click." That flags a creative refresh.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">8</div>
+      <div class="body">
+        <div class="body-head"><span class="ico"><svg class="i"><use href="#i-learn"/></svg></span><h3>Learn: results go back into the next ideas</h3></div>
+        <p>When a person accepts a lesson like "showing exactly what money buys works for this audience", it's handed to the Idea Generator for that client. The next batch of ideas builds on what is actually working, and says so.</p>
+        <p class="example"><strong>Example:</strong> The next round for Harbour Lights opens with new ideas built around concrete, countable impact. The approved lesson is shown alongside them so the strategist can see why.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="display:grid;gap:20px">
+  <div style="display:grid;gap:8px">
+    <h2>The nine AI helpers, each as its own flow</h2>
+    <p>Each helper below is a small assembly line. Read left to right: what goes in, what AI does, what gets checked automatically, where a person decides, and what comes out.</p>
+    <div class="key" aria-label="Key">
+      <span class="chip ai"><svg class="i"><use href="#i-ai"/></svg>AI helps</span>
+      <span class="chip check"><svg class="i"><use href="#i-check"/></svg>Automatic check</span>
+      <span class="chip person"><svg class="i"><use href="#i-person"/></svg>A person decides</span>
+    </div>
+  </div>
+
+  <div class="helpers">
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-idea"/></svg></span><h3>1. Idea Generator</h3><span class="live">In the demo</span><p>The starting point for everything. Turns a brief into fresh campaign ideas.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-brief"/></svg><span class="w">In</span>Brief, brand rules and what worked last time</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Suggests 3–6 ideas, each from a different angle</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Scores each idea and explains why</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>No made-up facts, no banned phrases, no repeats</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Strategist approves, rejects or rates</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-approve"/></svg><span class="w">Out</span>Approved idea goes to every maker</div>
+      </div>
+      <div class="loopback">↺ Ratings and rejections teach the next batch</div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-words"/></svg></span><h3>2. Copywriting</h3><span class="live">In the demo</span><p>Writes the words for the ad itself.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-idea"/></svg><span class="w">In</span>Approved idea, the offer and brand voice</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes several versions: opening line, headline, main text, button</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Right length for Facebook and Instagram, no unproven claims</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Copywriter edits or asks AI to rewrite one part</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-approve"/></svg><span class="w">Person</span>Approves the final version</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-words"/></svg><span class="w">Out</span>Ready-to-use ad words</div>
+      </div>
+      <div class="loopback">↺ Any edit after approval sends it back for review</div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-image"/></svg></span><h3>3. Image Ads</h3><span class="live">In the demo</span><p>Turns the idea and words into finished picture ads.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-brief"/></svg><span class="w">In</span>Approved idea and words, logo, photos</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Describes the visual and creates the scene</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Brand template adds the real logo and headline</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Right sizes, text readable, brand colours</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Designer picks, polishes and approves</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-image"/></svg><span class="w">Out</span>Ads sized for feed, stories and reels</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-brief"/></svg></span><h3>4. Script Writing</h3><span class="live">In the demo</span><p>Writes what will be said and shown in a video.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-idea"/></svg><span class="w">In</span>Approved idea, video length, who presents it</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes 3 opening hooks to choose from</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes it scene by scene: words, on-screen text, shots</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Fits the time, ends with a clear ask</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Creative lead approves before any filming</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-video"/></svg><span class="w">Out</span>Shot list and script for filming</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-video"/></svg></span><h3>5. UGC-style Video</h3><span class="live">In the demo · plan only</span><p>Turns an approved script into a creator-style video.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-brief"/></svg><span class="w">In</span>Approved script</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Chooses a real creator or an AI presenter</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Creates the presenter video and extra scenes, or the creator films</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Video fully finished, cost recorded</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Looks natural? Permission given? AI use disclosed?</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-video"/></svg><span class="w">Out</span>Footage sent to editing</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-make"/></svg></span><h3>6. Video Editing</h3><span class="live">In the demo · plan only</span><p>Does the first 80% of the edit so editors can focus on the craft.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-video"/></svg><span class="w">In</span>Raw footage, script, logo, music</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes out everything that's said</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Cuts pauses and mistakes, picks the best takes</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Adds captions, logo and music, then makes each size and length</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Editor fine-tunes pacing and approves</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-video"/></svg><span class="w">Out</span>Finished videos, originals kept safe</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-page"/></svg></span><h3>7. Landing Pages</h3><span class="live">In the demo</span><p>Builds the web page people land on after clicking the ad.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-idea"/></svg><span class="w">In</span>Approved idea and words, offer, brand style</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Plans the sections: headline, problem, offer, questions</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes each section to match the ad</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>No fake reviews, links work, fast on phones</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Previews, edits, publishes</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-page"/></svg><span class="w">Out</span>Live page with every version saved</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-watch"/></svg></span><h3>8. Toast: results dashboard</h3><span class="live">In the demo</span><p>Brings every client's Facebook and Instagram ad results into one place.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-watch"/></svg><span class="w">In</span>Each client's ad results, collected every morning</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Removes bad and duplicate rows, marks gaps as "not available"</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Calculates spend, results, cost per result and trends</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Writes a plain-English summary, with every number double-checked</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Account manager reviews it</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-brief"/></svg><span class="w">Out</span>Dashboard and client report</div>
+      </div>
+    </article>
+
+    <article class="helper">
+      <div class="helper-head"><span class="ico"><svg class="i"><use href="#i-advise"/></svg></span><h3>9. Media Buyer assistant</h3><span class="live">In the demo</span><p>Watches running ads and says what needs attention. It advises and never acts on its own.</p></div>
+      <div class="flow">
+        <div class="fstep in"><svg class="i"><use href="#i-watch"/></svg><span class="w">In</span>Daily results from the dashboard</div><div class="arr">→</div>
+        <div class="fstep c"><svg class="i"><use href="#i-check"/></svg><span class="w">Check</span>Spots rising costs, tired ads, spend spikes, wasted spend and winners</div><div class="arr">→</div>
+        <div class="fstep a"><svg class="i"><use href="#i-ai"/></svg><span class="w">AI</span>Explains what happened, with the numbers, and suggests a next step</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-person"/></svg><span class="w">Person</span>Media buyer accepts, rejects or dismisses</div><div class="arr">→</div>
+        <div class="fstep p"><svg class="i"><use href="#i-launch"/></svg><span class="w">Person</span>Makes any change in Facebook Ads Manager</div><div class="arr">→</div>
+        <div class="fstep out"><svg class="i"><use href="#i-learn"/></svg><span class="w">Out</span>Lessons sent back to the Idea Generator</div>
+      </div>
+      <div class="loopback">↺ This closes the loop: results shape the next ideas</div>
+    </article>
+
+  </div>
+</section>
+
+
+<section style="display:grid;gap:20px">
+  <div style="display:grid;gap:8px">
+    <h2>The AI tools we'd use, and why</h2>
+    <p>No single AI is best at everything, so each job gets the tool that does it best. The system can switch a job to a better or cheaper tool at any time without rebuilding anything.</p>
+  </div>
+  <div class="tools">
+    <div class="tool"><span class="job">Campaign ideas</span><span class="pick">Claude Opus 5.5</span><span class="alt">Also: OpenAI GPT, for a second set of ideas</span><p>Thinks well about a long brief and the audience, and keeps to the brand's rules.</p></div>
+    <div class="tool"><span class="job">Ad words, scripts, landing pages</span><span class="pick">Claude Sonnet 5.5</span><span class="alt">Also: OpenAI GPT</span><p>Writes naturally in the brand's voice and sticks to the facts it's given.</p></div>
+    <div class="tool"><span class="job">Quick checks and summaries</span><span class="pick">Claude Haiku 5.5</span><span class="alt">Also: smaller OpenAI models</span><p>Fast and inexpensive for the many small checks behind every piece.</p></div>
+    <div class="tool"><span class="job">Pictures for image ads</span><span class="pick">OpenAI image model or Google Imagen</span><span class="alt">Also: FLUX, a lower-cost open model</span><p>Creates the scene; our own template adds the real headline, button and logo so the words are always right.</p></div>
+    <div class="tool"><span class="job">Presenter videos</span><span class="pick">HeyGen + ElevenLabs</span><span class="alt">Also: Google Veo, Runway or Kling for extra scenes</span><p>Licensed presenters and natural voices. For fundraising, real people on camera stay the first choice.</p></div>
+    <div class="tool"><span class="job">Video editing</span><span class="pick">OpenAI Whisper + editing automation</span><span class="alt">Also: Creatomate, Descript</span><p>Writes out every spoken word with timings, so captions and cuts are accurate.</p></div>
+    <div class="tool"><span class="job">Ad results</span><span class="pick">Meta's own reporting connection (read-only)</span><span class="alt">Also: n8n for scheduling, Looker Studio for clients</span><p>Numbers are calculated exactly by the system; AI only explains them.</p></div>
+  </div>
+  <p class="note">In today's demo the writing agents run on a free AI service (Ollama Cloud) so anyone can try it at no cost. Claude or OpenAI plug into the same slot. Check current versions and prices before choosing.</p>
+</section>
+
+<section style="display:grid;gap:20px">
+  <div style="display:grid;gap:8px">
+    <h2>See it working: the demo</h2>
+    <p>A working web app. You describe a campaign once and the AI builds the whole package in about half a minute. Then a person reviews everything in one place and approves it, asks for a new version with a note, or rejects it.</p>
+  </div>
+  <div class="demo-grid">
+    <div class="demo-card"><h4>Idea Generator <span class="badge ok">Working</span></h4><p>Several different ideas, each scored with reasons. It picks the strongest and learns from your ratings and ad results.</p></div>
+    <div class="demo-card"><h4>Copywriting <span class="badge ok">Working</span></h4><p>Ad versions checked for made-up numbers, banned phrases and Facebook/Instagram length limits.</p></div>
+    <div class="demo-card"><h4>Image Ads <span class="badge ok">Working</span></h4><p>Real AI pictures turned into finished ads in square, portrait and Stories sizes, ready to download.</p></div>
+    <div class="demo-card"><h4>Script Writing <span class="badge ok">Working</span></h4><p>Opening hooks and a scene-by-scene script timed to 15, 30, 45 or 60 seconds.</p></div>
+    <div class="demo-card"><h4>UGC-style Video <span class="badge plan">Plan only</span></h4><p>A full production pack: presenter brief, shot list, consent and AI-disclosure notes. Video rendering connects later.</p></div>
+    <div class="demo-card"><h4>Video Editing <span class="badge plan">Plan only</span></h4><p>A complete edit plan: cuts, captions, extra footage, music and every export size. Rendering connects later.</p></div>
+    <div class="demo-card"><h4>Landing Pages <span class="badge ok">Working</span></h4><p>A page that matches the ad, previewed on desktop and mobile. Never published without approval.</p></div>
+    <div class="demo-card"><h4>Toast results <span class="badge ok">Working</span></h4><p>Imports Meta results, shows every client in one dashboard and writes a summary with every number checked.</p></div>
+    <div class="demo-card"><h4>Media Buyer <span class="badge ok">Working</span></h4><p>Spots problems and winning ads, explains them with the numbers, and never touches the ad account.</p></div>
+  </div>
+  <p class="note">Also on every form: “Fill with AI”, which completes a form from the client's history, plus one-click suggestions for each field. AI settings choose how many ideas, versions and concepts to make.</p>
+</section>
+
+<section class="never">
+  <h2>What AI never does on its own</h2>
+  <ul>
+    <li>Publish an ad, a video or a web page</li>
+    <li>Change a budget, pause a campaign or edit targeting</li>
+    <li>Invent statistics, reviews, testimonials or quotes</li>
+    <li>Send anything to a client without a person reading it first</li>
+  </ul>
+</section>
+
+<section style="display:grid;gap:16px">
+  <h2>How we'd roll it out</h2>
+  <div class="rhythm">
+    <div><b>First 2 weeks</b><p>Ideas, ad words and the results dashboard working on a few real briefs. These are quick wins that everything else builds on.</p></div>
+    <div><b>By day 30</b><p>Results collected automatically for every client each morning. Alerts sent to the team. Scripts and image ads added.</p></div>
+    <div><b>By day 60</b><p>Video editing help, landing pages and a first trial of AI-presented video.</p></div>
+    <div><b>By day 90</b><p>All nine areas connected into one loop, with costs and quality tracked per client.</p></div>
+  </div>
+</section>
+
+
+<section style="display:grid;gap:16px">
+  <h2>What's next</h2>
+  <div class="rhythm">
+    <div><b>Learn the real work</b><p>Spend time with the team and collect past briefs and winning ads, so every improvement is tested against real examples.</p></div>
+    <div><b>Connect the real data</b><p>Pull every client's Meta results automatically each night, with alerts sent to the team's chat.</p></div>
+    <div><b>Best AI for each job</b><p>Move writing to Claude, compare results with the team, and keep whatever performs best.</p></div>
+    <div><b>Finish the video steps</b><p>Connect presenter video and automatic editing for one pilot client first.</p></div>
+  </div>
+</section>
+
+<footer>Prepared by Sohaib Ahmed for CerealBox Agency. Harbour Lights Foundation and all figures here are made-up examples for illustration. No real CerealBox client data or ad accounts were used.</footer>
+</div>
