@@ -42,26 +42,31 @@ export default async function CampaignsPage() {
       <section className="mb-8 rounded-lg border border-line bg-surface p-5">
         <h2 className="mb-4 font-semibold">New campaign</h2>
         <ActionForm action={createAndRunAction} className="grid items-start gap-x-5 gap-y-4 md:grid-cols-2 *:min-w-0">
-          <AISuggest kind="campaign" />
-          <label>
-            Client
-            {clients.length ? (
-              <select name="client_id" defaultValue={String(clients[0].id)}>
+          <AISuggest kind="campaign" requires={[clients.length ? "Client" : "Client name"]} />
+          {/* Existing clients: pick one (new clients are added from the Clients form below).
+              No clients yet: type a name and it's created with the campaign.
+              data-ai-required: "Fill with AI" / "Suggest" won't run until this has a value. */}
+          {clients.length ? (
+            <label>
+              Client *
+              <select name="client_id" required defaultValue="" data-ai-required="Client">
+                <option value="" disabled>
+                  Choose a client…
+                </option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
                 ))}
-                <option value="">+ New client…</option>
               </select>
-            ) : (
+            </label>
+          ) : (
+            <label>
+              Client name *
               <input type="hidden" name="client_id" value="" />
-            )}
-          </label>
-          <label>
-            {clients.length ? "New client name (only if “+ New client”)" : "Client name *"}
-            <input name="new_client" placeholder="e.g. Harbour Lights Foundation" />
-          </label>
+              <input name="new_client" required minLength={2} placeholder="e.g. Harbour Lights Foundation" data-ai-required="Client name" />
+            </label>
+          )}
           <label>
             Goal *
             <select name="goal" defaultValue="Donations">
@@ -175,10 +180,10 @@ export default async function CampaignsPage() {
           </ul>
           <ActionForm action={createClientAction} className="space-y-2">
             <p className="text-sm font-medium">Add a client with brand rules</p>
-            <AISuggest kind="client" />
+            <AISuggest kind="client" requires={["Name"]} />
             <label>
-              Name
-              <input name="name" required minLength={2} />
+              Name *
+              <input name="name" required minLength={2} data-ai-required="Name" />
             </label>
             <label>
               Sector

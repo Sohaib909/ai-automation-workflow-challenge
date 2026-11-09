@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { suggestFieldAction } from "@/app/actions";
 import { Spinner } from "./action-form";
+import { missingForAI, needsMessage } from "./ai-suggest";
 
 type Result = Awaited<ReturnType<typeof suggestFieldAction>>;
 
@@ -21,6 +22,11 @@ export function FieldSuggest({ field, campaignId }: { field: string; campaignId?
   async function suggest() {
     const f = form();
     if (!f) return;
+    const missing = missingForAI(f);
+    if (missing.length) {
+      missing[0].focus();
+      return setRes({ ok: false, message: needsMessage(missing), options: [], source: "", skipped: 0, isMock: false, mode: "replace" });
+    }
     const typed: Record<string, string> = {};
     new FormData(f).forEach((v, k) => {
       if (typeof v === "string") typed[k] = v;

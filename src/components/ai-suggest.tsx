@@ -8,10 +8,24 @@ type FormKind = "campaign" | "brief" | "client";
 const SUGGESTABLE_SELECTS = ["goal", "cta"];
 
 /**
+ * Fields marked `data-ai-required="Label"` must have a value before the AI can suggest anything
+ * (e.g. the client: without it there is nothing to base suggestions on). Returns the empty ones.
+ */
+export function missingForAI(form: HTMLFormElement) {
+  return [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("[data-ai-required]")].filter((el) => !el.value.trim());
+}
+
+export const needsMessage = (missing: HTMLElement[]) =>
+  `AI needs ${listLabels(missing.map((el) => el.dataset.aiRequired!))} first. Fill ${missing.length > 1 ? "them" : "it"} in, then try again.`;
+
+const listLabels = (labels: string[]) => labels.map((l) => `“${l}”`).join(labels.length > 2 ? ", " : " and ");
+
+/**
  * "✦ Fill with AI" — fills the EMPTY fields of the surrounding form with suggestions based on what the
  * system knows about the client. Filled fields are highlighted; nothing the user typed is overwritten.
+ * `requires` lists the labels of the fields marked data-ai-required, shown up front so the user knows.
  */
-export function AISuggest({ kind, campaignId }: { kind: FormKind; campaignId?: number }) {
+export function AISuggest({ kind, campaignId, requires = [] }: { kind: FormKind; campaignId?: number; requires?: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string; notes: string[] } | null>(null);
@@ -19,6 +33,11 @@ export function AISuggest({ kind, campaignId }: { kind: FormKind; campaignId?: n
   async function fill() {
     const form = ref.current?.closest("form");
     if (!form) return;
+    const missing = missingForAI(form);
+    if (missing.length) {
+      missing[0].focus();
+      return setMsg({ ok: false, text: needsMessage(missing), notes: [] });
+    }
     const fd = new FormData(form);
     const typed: Record<string, string> = {};
     fd.forEach((v, k) => {
@@ -61,7 +80,16 @@ export function AISuggest({ kind, campaignId }: { kind: FormKind; campaignId?: n
       <button type="button" onClick={fill} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md border border-accent/50 bg-accent-soft px-3 py-1.5 text-sm font-medium text-accent hover:opacity-90 disabled:opacity-60">
         {busy ? <Spinner /> : "✦"} {busy ? "Thinking…" : "Fill with AI"}
       </button>
-      <span className="text-xs text-muted">Fills empty fields from what we know about this client. Your text is never overwritten.</span>
+      <span className="text-xs text-muted">
+        {requires.length ? (
+          <>
+            Works only once <span className="font-medium text-ink">{listLabels(requires)}</span> {requires.length > 1 ? "are" : "is"} filled in. It then fills the other empty fields from what we know
+            about this client. Your text is never overwritten.
+          </>
+        ) : (
+          "Fills empty fields from what we know about this client. Your text is never overwritten."
+        )}
+      </span>
       {msg && (
         <div role="status" className={`w-full text-xs ${msg.ok ? "text-good" : "text-bad"}`}>
           {msg.ok ? "✓ " : "✕ "}
