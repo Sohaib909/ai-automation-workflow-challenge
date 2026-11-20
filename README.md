@@ -12,7 +12,7 @@ Prototype for the **CerealBox Agency AI Automation & Creative Workflow Challenge
    - **Demo A, Creative:** Client → Campaign → Brief → **AI Idea Generator** → human approval → **AI Copywriting** → QC → edit/regenerate → approval → export
    - **Demo B, Performance:** Meta CSV → validation → **Toast** multi-client dashboard → AI summary (figure-checked) → **Media Buyer** recommendations (read-only) → accept/reject → **accepted learnings feed the Idea Generator**
 
-All clients and ad data are **fictional sample data**. Nothing connects to live CerealBox systems or ad accounts.
+All clients and ad data are **fictional sample data**. Nothing connects to live CerealBox systems or ad accounts..
 
 ## Run it
 
